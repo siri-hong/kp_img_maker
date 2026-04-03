@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reward Studio v6.4 - Final Text Color Fix</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { 
+            --rank-color: #ff8e2b; 
+            --card-color: #ffffff; 
+            --text-main: #060B11; /* ✅ 기본 텍스트 컬러 디폴트 설정 */
+            --line-color: #f2f4f7; 
+            --bg-color: #f2f4f7; 
+        }
+        
+        body { 
+            font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); 
+            display: flex; justify-content: center; align-items: flex-start; 
+            min-height: 100vh; padding: 60px 20px; margin: 0; color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .main-container { width: 100%; max-width: 1000px; display: flex; gap: 40px; justify-content: center; }
+        @media (max-width: 850px) { .main-container { flex-direction: column; align-items: center; } }
+
+        .glass-panel { 
+            flex: 1; min-width: 400px; max-width: 460px; background: #ffffff; 
+            padding: 32px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
+            box-sizing: border-box;
+        }
+        h1 { font-size: 22px; margin: 0 0 28px 0; font-weight: 800; letter-spacing: -0.7px; }
+
+        /* 입력창 스타일 */
+        .input-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .input-group { 
+            display: flex; gap: 8px; align-items: center; background: #f9fafb; 
+            padding: 10px; border-radius: 12px; border: 1px solid #eee; width: 100%; box-sizing: border-box;
+        }
+        .input-group input { 
+            background: #fff; border: 1px solid #e5e8eb; padding: 10px; border-radius: 8px; font-size: 13px; 
+            font-family: inherit; outline: none; box-sizing: border-box; color: var(--text-main);
+        }
+        
+        .in-rank { width: 60px; font-weight: 700; color: var(--rank-color); text-align: center; flex-shrink: 0; }
+        .in-prize { flex: 2; min-width: 0; }
+        .in-count { width: 80px; text-align: right; flex-shrink: 0; }
+        
+        .btn-remove { background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 18px; padding: 0 4px; flex-shrink: 0; }
+        .btn-add { 
+            width: 100%; padding: 14px; background: #f0f4fa; color: #3182f6; border: 1px dashed #3182f6;
+            border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 32px; 
+        }
+
+        .settings-grid { border-top: 1px solid #f2f4f7; padding-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+        .setting-row { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 600; }
+        
+        .color-toggle-group { display: flex; gap: 8px; }
+        .color-btn { 
+            padding: 8px 14px; border-radius: 8px; border: 1px solid #e5e8eb; 
+            background: #fff; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s;
+        }
+        .color-btn.active { background: #3182f6; color: #fff; border-color: #3182f6; }
+
+        #save-btn { width: 100%; padding: 18px; background: #3182f6; color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 15px; }
+
+        /* 프리뷰 영역 */
+        .preview-section { flex: 0 0 327px; position: sticky; top: 60px; }
+        .preview-tag { font-size: 11px; font-weight: 800; color: #adb5bd; margin-bottom: 20px; letter-spacing: 1.5px; text-align: center; }
+        
+        #capture-target {
+            width: 327px; background: var(--card-color); border-radius: 20px; 
+            padding: 14px 24px !important; 
+            box-sizing: border-box; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+        }
+
+        .reward-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: none; }
+        .reward-table td { padding: 14px 0; font-size: 15px; vertical-align: middle; border: none; line-height: 1.2; }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e8eb; transition: .3s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background: #3182f6; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .color-wrap { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+        .color-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #8b95a1; }
+        input[type="color"] { appearance: none; border: none; width: 24px; height: 24px; cursor: pointer; background: none; padding: 0; border-radius: 50%; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="glass-panel">
+        <h1>Reward Studio v6.4</h1>
+        <div id="input-list" class="input-list">
+            <div class="input-group">
+                <input type="text" class="in-rank" value="1등">
+                <input type="text" class="in-prize" value="페이포인트 100만원">
+                <input type="text" class="in-count" value="3명">
+                <button class="btn-remove" onclick="removeRow(this)">×</button>
+            </div>
+            <div class="input-group">
+                <input type="text" class="in-rank" value="2등">
+                <input type="text" class="in-prize" value="페이포인트 10만원">
+                <input type="text" class="in-count" value="50명">
+                <button class="btn-remove" onclick="removeRow(this)">×</button>
+            </div>
+        </div>
+        <button class="btn-add" onclick="addRow()">+ 리워드 추가하기</button>
+
+        <div class="settings-grid">
+            <div class="setting-row">
+                <span>구분선 사용</span>
+                <label class="switch"><input type="checkbox" id="show-line" checked onchange="update()"><span class="slider"></span></label>
+            </div>
+            <div class="setting-row">
+                <span>박스 컬러</span>
+                <div class="color-toggle-group">
+                    <button class="color-btn active" data-color="#ffffff" onclick="setBoxColor(this)">White</button>
+                    <button class="color-btn" data-color="#F4F6F8" onclick="setBoxColor(this)">Gray</button>
+                </div>
+            </div>
+            <div class="setting-row">
+                <span>포인트 컬러 설정</span>
+                <div class="color-wrap">
+                    <div class="color-item">등수 <input type="color" id="cp-rank" value="#ff8e2b" oninput="update()"></div>
+                    <div class="color-item">라인 <input type="color" id="cp-line" value="#f2f4f7" oninput="update()"></div>
+                </div>
+            </div>
+        </div>
+        <button id="save-btn" onclick="saveImage()">이미지 저장 (981px 고화질)</button>
+    </div>
+
+    <div class="preview-section">
+        <div class="preview-tag">PREVIEW (327px)</div>
+        <div id="capture-target">
+            <table class="reward-table" id="view"></table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentBoxColor = "#ffffff";
+    const textDefault = "#060B11"; // ✅ 텍스트 컬러 디폴트 변수
+
+    function setBoxColor(btn) {
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentBoxColor = btn.getAttribute('data-color');
+        
+        if(currentBoxColor === "#F4F6F8") {
+            document.getElementById('cp-line').value = "#EAEBEB";
+        } else {
+            document.getElementById('cp-line').value = "#F2F4F7";
+        }
+        
+        update();
+    }
+
+    function addRow() {
+        const inputList = document.getElementById('input-list');
+        const nextRank = inputList.children.length + 1;
+        const div = document.createElement('div');
+        div.className = 'input-group';
+        div.innerHTML = `<input type="text" class="in-rank" value="${nextRank}등"><input type="text" class="in-prize" placeholder="리워드 명"><input type="text" class="in-count" placeholder="인원"><button class="btn-remove" onclick="removeRow(this)">×</button>`;
+        inputList.appendChild(div);
+        bindEvents();
+        update();
+    }
+
+    function removeRow(btn) {
+        const inputList = document.getElementById('input-list');
+        if(inputList.children.length > 1) {
+            btn.parentElement.remove();
+            update();
+        }
+    }
+
+    function bindEvents() {
+        document.querySelectorAll('.input-group input').forEach(input => { input.oninput = update; });
+    }
+
+    function update() {
+        const cr = document.getElementById('cp-rank').value;
+        const cl = document.getElementById('cp-line').value;
+        const sl = document.getElementById('show-line').checked;
+        
+        document.documentElement.style.setProperty('--rank-color', cr);
+        document.documentElement.style.setProperty('--card-color', currentBoxColor);
+        document.documentElement.style.setProperty('--line-color', cl);
+        
+        const rows = document.querySelectorAll('.input-group');
+        const vw = document.getElementById('view');
+        let html = '';
+        
+        rows.forEach((row, index) => {
+            const rank = row.querySelector('.in-rank').value || '';
+            const prize = row.querySelector('.in-prize').value || '';
+            const count = row.querySelector('.in-count').value || '';
+            const isFirst = (index === 0);
+            const isLast = (index === rows.length - 1);
+            
+            const borderStyle = (sl && !isLast) ? `1px solid ${cl}` : 'none';
+            const hasRank = rank.trim() !== "";
+            const rankWidth = hasRank ? "45px" : "0px";
+            const rowWeight = isFirst ? '600' : '500'; 
+
+            html += `<tr>
+                <td style="width:${rankWidth}; padding:14px 0; color:${cr}; border-bottom:${borderStyle}; font-weight:${rowWeight}; font-family:Pretendard, sans-serif; white-space:nowrap; text-align:left;">${rank}</td>
+                <td style="padding:14px 0; border-bottom:${borderStyle}; text-align:left; color:${textDefault}; font-weight:${rowWeight}; font-family:Pretendard, sans-serif; word-break:break-all;">${prize}</td>
+                <td style="width:70px; padding:14px 0; border-bottom:${borderStyle}; text-align:right; color:${textDefault}; font-weight:${rowWeight}; font-family:Pretendard, sans-serif;">${count}</td>
+            </tr>`;
+        });
+        vw.innerHTML = html;
+    }
+
+    async function saveImage() {
+        const target = document.getElementById('capture-target');
+        const canvas = await html2canvas(target, { 
+            scale: 3, 
+            useCORS: true, 
+            backgroundColor: null,
+            logging: false,
+            width: target.offsetWidth,
+            height: target.offsetHeight
+        });
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `reward_list_studio.png`;
+        link.click();
+    }
+
+    window.onload = function() { bindEvents(); update(); };
+</script>
+</body>
+</html>

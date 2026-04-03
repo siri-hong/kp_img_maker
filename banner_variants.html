@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Banner Maker v8.0 - Final Font Balance</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root { --bg: #f5f6f7; --panel: #ffffff; --blue: #3182f6; --text: #000; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 40px 20px; margin: 0; color: var(--text); -webkit-font-smoothing: antialiased; }
+        .main-container { width: 100%; max-width: 1600px; display: flex; gap: 30px; justify-content: center; }
+        @media (max-width: 1300px) { .main-container { flex-direction: column; align-items: center; } }
+        .control-panel { flex: 0 0 350px; width: 350px; background: var(--panel); padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 15px; position: sticky; top: 40px; }
+        h1 { font-size: 17px; margin: 0; font-weight: 800; color: #1a1f27; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-label { font-size: 12px; font-weight: 700; color: #8b95a1; }
+        .color-row { display: flex; gap: 8px; align-items: center; }
+        .color-input { width: 40px; height: 40px; border: none; padding: 0; background: none; cursor: pointer; border-radius: 8px; overflow: hidden; }
+        .hex-input { flex: 1; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px solid #eee; font-size: 13px; font-weight: 700; outline: none; }
+        .text-input { width: 100%; padding: 10px; background: #f9fafb; border-radius: 8px; border: 1px solid #eee; box-sizing: border-box; font-size: 13px; outline: none; }
+        textarea.text-input { resize: none; height: 65px; }
+        .file-label { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 40px; background: #f0f6ff; color: var(--blue); border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px dashed var(--blue); }
+        .guide-box { padding: 8px; background: #f0f6ff; border-radius: 6px; font-size: 11px; color: var(--blue); font-weight: 600; line-height: 1.4; }
+        #bulk-save-btn { width: 100%; padding: 15px; background: #3182f6; color: white; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(49, 130, 246, 0.2); transition: all 0.2s; }
+        #bulk-save-btn:hover { background: #1b64da; transform: translateY(-1px); }
+        #bulk-save-btn:disabled { background: #e5e8eb; color: #adb5bd; cursor: not-allowed; box-shadow: none; }
+        .preview-grid { flex: 1; display: flex; flex-direction: column; gap: 25px; width: 100%; max-width: 1000px; }
+        .canvas-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box; }
+        .canvas-title { font-size: 13px; font-weight: 800; color: #4e5968; display: flex; justify-content: space-between; align-items: center; }
+        .c-wrap { background: #fff; border: 1px solid #eee; overflow: hidden; width: 100%; }
+        .w-1200-600 { aspect-ratio: 1200 / 600; }
+        .w-800-600 { aspect-ratio: 800 / 600; max-width: 800px; }
+        .w-800-800 { aspect-ratio: 800 / 800; max-width: 600px; }
+        canvas { width: 100% !important; height: 100% !important; display: block; }
+        .dl-btn { padding: 6px 12px; background: #000; color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .dl-btn:disabled { background: #e5e8eb; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <div class="control-panel">
+        <h1>Banner Maker v8.0</h1>
+        <div class="input-group">
+            <span class="input-label">배너 이미지 등록</span>
+            <label for="imageInput" class="file-label">🖼️ 이미지 등록</label>
+            <input type="file" id="imageInput" accept="image/*" style="display:none">
+        </div>
+        <div class="input-group">
+            <span class="input-label">메인 카피</span>
+            <div class="guide-box">💡 텍스트에서 컬러변경 할 영역을 드래그하세요!</div>
+            <textarea id="mainCopy" class="text-input" placeholder="내용을 입력하세요."></textarea>
+        </div>
+        <div class="input-group">
+            <span class="input-label">강조 색상</span>
+            <div class="color-row">
+                <input type="color" id="pointColor" class="color-input" value="#3182f6">
+                <input type="text" id="hexText" class="hex-input" value="#3182f6">
+            </div>
+        </div>
+        <div class="input-group">
+            <span class="input-label">서브 카피 (생략 가능)</span>
+            <input type="text" id="subCopy" class="text-input" placeholder="최대 18자" maxlength="18">
+        </div>
+        <button id="bulk-save-btn" onclick="saveAllBanners()" disabled>⚡ 모든 규격 한 번에 저장하기</button>
+    </div>
+
+    <div class="preview-grid">
+        <div class="canvas-card">
+            <div class="canvas-title"><span>Wide (1200x600) [74px / 44px]</span><button class="dl-btn" onclick="save1200()" disabled>다운로드</button></div>
+            <div class="c-wrap w-1200-600"><canvas id="canvas1200"></canvas></div>
+        </div>
+        <div class="canvas-card">
+            <div class="canvas-title"><span>Standard (800x600) [60px / 36px]</span><button class="dl-btn" onclick="saveWide()" disabled>다운로드</button></div>
+            <div class="c-wrap w-800-600"><canvas id="canvasWide"></canvas></div>
+        </div>
+        <div class="canvas-card">
+            <div class="canvas-title"><span>Square (800x800) [64px / 40px]</span><button class="dl-btn" onclick="saveSquare()" disabled>다운로드</button></div>
+            <div class="c-wrap w-800-800"><canvas id="canvasSquare"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const cvsList = {
+        '1200': { el: document.getElementById('canvas1200'), w: 1200, h: 600, gl: 50, gt: 80, isize: 500, space: 34, ms: 74, ss: 44, mlh: 98, name: 'Wide_1200x600' },
+        'wide': { el: document.getElementById('canvasWide'), w: 800, h: 600, gl: 50, gt: 60, isize: 460, space: 34, ms: 60, ss: 36, mlh: 78, name: 'Standard_800x600' },
+        'sq': { el: document.getElementById('canvasSquare'), w: 800, h: 800, gl: 50, gt: 80, isize: 550, space: 40, ms: 64, ss: 40, mlh: 78, name: 'Square_800x800' }
+    };
+
+    const mainInput = document.getElementById('mainCopy');
+    const subInput = document.getElementById('subCopy');
+    const colorPicker = document.getElementById('pointColor');
+    const hexInput = document.getElementById('hexText');
+    const bulkSaveBtn = document.getElementById('bulk-save-btn');
+    const SCALE = 2;
+    let bgImg = null, imgRatio = 1;
+    let hStart = 0, hEnd = 0;
+
+    function init() {
+        for(let k in cvsList) {
+            cvsList[k].el.width = cvsList[k].w * SCALE;
+            cvsList[k].el.height = cvsList[k].h * SCALE;
+        }
+        renderAll();
+    }
+
+    function renderAll() {
+        for(let k in cvsList) {
+            const c = cvsList[k];
+            draw(c.el, c.el.getContext('2d'), c.w, c.h, c.gl, c.gt, c.isize, c.space, c.ms, c.ss, c.mlh, false);
+        }
+    }
+
+    function draw(cvs, ctx, bw, bh, gl, gt, isize, space, mSize, sSize, mlh, isSaving) {
+        const s = isSaving ? 1 : SCALE;
+        ctx.resetTransform(); ctx.setTransform(s, 0, 0, s, 0, 0); ctx.clearRect(0, 0, bw, bh);
+        ctx.fillStyle = "#F5F6F8"; ctx.fillRect(0, 0, bw, bh);
+
+        if (bgImg) {
+            ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+            let dW, dH;
+            if (imgRatio > 1) { dW = isize; dH = isize / imgRatio; }
+            else { dH = isize; dW = isize * imgRatio; }
+            ctx.drawImage(bgImg, bw - dW, bh - dH, dW, dH);
+        } else if (!isSaving) {
+            ctx.setLineDash([10, 5]); ctx.strokeStyle = "#D1D5DB"; ctx.lineWidth = 2;
+            ctx.strokeRect(bw - isize, bh - isize, isize, isize);
+            ctx.textAlign = "center"; ctx.fillStyle = "#D1D5DB"; ctx.font = "500 18px Pretendard";
+            ctx.fillText(`Image Area`, bw - (isize/2), bh - (isize/2)); ctx.setLineDash([]);
+        }
+
+        ctx.textAlign = "left"; ctx.textBaseline = "top";
+        const mainVal = mainInput.value;
+        const mainDisplay = (isSaving) ? mainVal : (mainVal || "메인카피를 입력하세요.\n최대 2줄 권장");
+        
+        if (mainDisplay) {
+            const lines = mainDisplay.split('\n');
+            ctx.font = `600 ${mSize}px Pretendard`;
+            let gIdx = 0;
+            lines.forEach((line, i) => {
+                let curX = gl; const y = gt + (i * mlh);
+                for (let cIdx = 0; cIdx < line.length; cIdx++) {
+                    const char = line[cIdx];
+                    if (mainVal && gIdx >= hStart && gIdx < hEnd && hStart !== hEnd) { 
+                        ctx.fillStyle = colorPicker.value; 
+                    } else { 
+                        ctx.fillStyle = "#000000"; 
+                    }
+                    ctx.fillText(char, curX, y);
+                    curX += ctx.measureText(char).width;
+                    gIdx++;
+                }
+                gIdx++; 
+            });
+
+            const subVal = subInput.value.trim();
+            if (subVal !== "" || !isSaving) {
+                const subDisplay = subVal || (isSaving ? "" : "최대 18자");
+                if (subDisplay) {
+                    const mbY = gt + (lines.length * mlh) - (mlh - mSize);
+                    ctx.font = `400 ${sSize}px Pretendard`; ctx.fillStyle = "#000000";
+                    ctx.fillText(subDisplay, gl, mbY + space);
+                }
+            }
+        }
+    }
+
+    mainInput.onselect = () => { hStart = mainInput.selectionStart; hEnd = mainInput.selectionEnd; renderAll(); };
+    mainInput.oninput = renderAll; subInput.oninput = renderAll;
+    colorPicker.oninput = (e) => { hexInput.value = e.target.value.toUpperCase(); renderAll(); };
+    hexInput.oninput = (e) => { colorPicker.value = e.target.value; renderAll(); };
+
+    document.getElementById('imageInput').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => { 
+                bgImg = img; imgRatio = img.width/img.height; 
+                document.querySelectorAll('.dl-btn').forEach(b => b.disabled = false);
+                bulkSaveBtn.disabled = false;
+                renderAll(); 
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    function save1200() { handleSave('1200'); }
+    function saveWide() { handleSave('wide'); }
+    function saveSquare() { handleSave('sq'); }
+    function saveAllBanners() { for(let key in cvsList) { handleSave(key); } }
+
+    function handleSave(key) {
+        const c = cvsList[key];
+        const sc = document.createElement('canvas'); sc.width = c.w; sc.height = c.h;
+        draw(sc, sc.getContext('2d'), c.w, c.h, c.gl, c.gt, c.isize, c.space, c.ms, c.ss, c.mlh, true);
+        const link = document.createElement('a'); link.download = `${c.name}.png`;
+        link.href = sc.toDataURL('image/png', 1.0); link.click();
+    }
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>마케팅 툴 허브</title>
+    <style>
+        body { display: flex; margin: 0; height: 100vh; font-family: sans-serif; }
+        /* 왼쪽 메뉴바 */
+        .sidebar { width: 250px; background: #202123; color: white; padding: 20px; flex-shrink: 0; }
+        .sidebar h2 { color: #4dabf7; font-size: 18px; }
+        .menu-btn { 
+            display: block; width: 100%; padding: 12px; margin-bottom: 5px;
+            background: #343541; color: white; border: none; border-radius: 5px;
+            text-align: left; cursor: pointer; text-decoration: none; font-size: 14px;
+        }
+        .menu-btn:hover { background: #444654; }
+        /* 오른쪽 작업창 */
+        .content { flex: 1; background: #eee; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>MARKETING HUB</h2>
+    <p style="font-size:11px; color:#888;">메뉴를 클릭하세요</p>
+    
+    <a href="resizing.html" target="toolFrame" class="menu-btn">🖼️ 리사이징</a>
+    <a href="image_combine.html" target="toolFrame" class="menu-btn">🧩 이미지 조합</a>
+    <a href="banner_variants.html" target="toolFrame" class="menu-btn">🎨 배너 메이커</a>
+    <a href="reward_table.html" target="toolFrame" class="menu-btn">📊 표 이미지 제작</a>
+    <a href="step.html" target="toolFrame" class="menu-btn">📝 스텝 에디터</a>
+</div>
+
+<iframe name="toolFrame" class="content" src="about:blank"></iframe>
+
+</body>
+</html>

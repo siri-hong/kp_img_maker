@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Composer Pro v5.4.1</title>
+    <title>Marketing Composer Pro v5.4.3</title>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -43,7 +43,6 @@
             display: none; pointer-events: auto; user-select: none;
             backface-visibility: hidden; transform-style: preserve-3d; outline: none;
         }
-        /* 레이어 선택 시 파란색 가이드라인 */
         .layer-container.active { outline: 2px solid var(--primary) !important; outline-offset: -2px; }
         .layer-img { width: 100%; height: auto; display: block; cursor: move; -webkit-user-drag: none; image-rendering: high-quality; }
 
@@ -77,15 +76,12 @@
         #layer-list { display: flex; flex-direction: column; gap: 10px; }
         .layer-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 15px; position: relative; transition: border-color 0.2s, background-color 0.2s, transform 0.2s; cursor: pointer; }
         .layer-card.selected { border: 2px solid var(--primary); background: #f0f7ff; }
-        
-        /* 드래그 상태 디자인 */
         .layer-card.dragging { opacity: 0.5; border: 2px dashed var(--primary); transform: scale(0.98); z-index: 100; }
         
         .drag-handle { cursor: grab; font-size: 16px; color: #cbd5e1; padding: 4px 8px; background: #f8f9fa; border-radius: 6px; user-select: none; }
         .drag-handle:active { cursor: grabbing; }
         
         .layer-visibility-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 0; margin-right: 5px; color: var(--text-sub); }
-        
         .layer-title { font-weight: 800; font-size: 13px; cursor: text; padding: 2px 4px; display: inline-block; min-width: 50px; }
         .layer-title-input { border: 1px solid var(--primary); border-radius: 4px; padding: 2px 4px; font-size: 13px; font-weight: 800; width: 150px; outline: none; background: white; }
 
@@ -97,7 +93,7 @@
 </head>
 <body>
 
-<header><h1>Marketing Composer Pro v5.4.1</h1></header>
+<header><h1>Marketing Composer Pro v5.4.3</h1></header>
 
 <div class="app-container">
     <div class="preview-section" id="preview-area" onclick="deactivateAllLayers(event)">
@@ -115,7 +111,7 @@
     <aside class="sidebar">
         <div class="setting-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="font-size:13px; font-weight:700;">History</span>
+                <span style="font-size:13px; font-weight:700;">History (로컬 저장소)</span>
                 <button onclick="deleteAllHistory()" style="background:none; border:none; color:var(--text-sub); font-size:11px; text-decoration:underline; cursor:pointer;">전체 초기화</button>
             </div>
             <div style="display:flex; gap:5px;">
@@ -130,8 +126,7 @@
             <div class="tip-box">
                 <b>💡 이미지 제작 TIP</b><br>
                 - 건틀렛빌더 본문 이미지 : 가로 981px, 세로 자유, 패딩 72px<br>
-                - 배너 오브젝트 : 가로 312px, 세로 312px, 패딩 30px<br>
-                <span style="color: #3182f6; font-size: 11px; font-weight: 800;">* 제작 가이드를 확인 후 작업해주세요.</span>
+                - 배너 오브젝트 : 가로 312px, 세로 312px, 패딩 30px
             </div>
             
             <span style="font-size:13px; font-weight:700; display:block; margin-bottom:10px;">Scale & Global Settings</span>
@@ -179,7 +174,7 @@
                 
                 <div id="current-name-display"></div>
                 <div class="btn-group">
-                    <button class="btn btn-snapshot" onclick="saveToHistory()">📌 스냅샷 저장</button>
+                    <button class="btn btn-snapshot" onclick="saveToHistory()">📌 저장하기</button>
                     <button class="btn btn-export" onclick="exportImage()">✨ PNG 내보내기</button>
                 </div>
             </div>
@@ -263,7 +258,6 @@
         btn.innerText = isHidden ? '👁️' : '👁️‍🗨️'; btn.style.opacity = isHidden ? '1' : '0.3';
     }
 
-    // 1. 레이어 제목 편집: 한글 중복 및 파란 라인 잔상 제거 보완
     function editLayerTitle(span) {
         const currentTitle = span.innerText;
         const input = document.createElement('input');
@@ -276,13 +270,10 @@
         const saveTitle = () => {
             if (isFinished) return;
             isFinished = true;
-
             const newTitle = input.value.trim() || currentTitle;
             span.innerText = newTitle;
             span.closest('.layer-card').dataset.name = newTitle;
             input.replaceWith(span);
-
-            // 포커스 해제 시 모든 파란색 가이드라인 강제 제거
             setTimeout(() => {
                 document.querySelectorAll('.layer-container').forEach(el => el.classList.remove('active'));
                 document.querySelectorAll('.layer-card').forEach(c => c.classList.remove('selected'));
@@ -290,21 +281,13 @@
         };
 
         input.onblur = saveTitle;
-
         input.onkeydown = (e) => {
-            // 한글 조합 중 엔터 칠 때 중복 입력 방지 (IME 체크)
             if (e.isComposing || e.keyCode === 229) return; 
-
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                input.blur(); // blur 이벤트를 발생시켜 saveTitle 실행
-            }
+            if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
         };
 
         span.replaceWith(input);
         input.focus();
-        
-        // 입력창 클릭 시 이벤트 전파 방지
         input.onclick = (e) => e.stopPropagation();
     }
 
@@ -335,10 +318,7 @@
         cont.append(img); canvas.appendChild(cont);
         
         const card = document.createElement('div'); card.className = 'layer-card'; card.dataset.id = id; card.dataset.name = layerDisplayName;
-        
-        card.onclick = (e) => { 
-            if(!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('.drag-handle')) selectLayer(id); 
-        };
+        card.onclick = (e) => { if(!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('.drag-handle')) selectLayer(id); };
 
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -355,24 +335,15 @@
             <div class="batch-row"><label>좌우</label><input type="range" id="r-left-${id}" min="-50" max="150" value="50" oninput="syncIndividualLayer('${id}', 'left', 'range', this.value)"><input type="number" id="n-left-${id}" class="num-input" value="50" oninput="syncIndividualLayer('${id}', 'left', 'num', this.value)"></div>
             <div class="batch-row"><label>상하</label><input type="range" id="r-top-${id}" min="-50" max="150" value="50" oninput="syncIndividualLayer('${id}', 'top', 'range', this.value)"><input type="number" id="n-top-${id}" class="num-input" value="50" oninput="syncIndividualLayer('${id}', 'top', 'num', this.value)"></div>`;
         
-        // 2. 레이어 순서 변경 (DnD)
         card.addEventListener('dragstart', () => card.classList.add('dragging'));
-        card.addEventListener('dragend', () => {
-            card.classList.remove('dragging');
-            card.draggable = false;
-            updateZIndex();
-        });
-
+        card.addEventListener('dragend', () => { card.classList.remove('dragging'); card.draggable = false; updateZIndex(); });
         layerList.addEventListener('dragover', (e) => {
             e.preventDefault();
             const draggingItem = document.querySelector('.dragging');
             if (!draggingItem) return;
             const afterElement = getDragAfterElement(layerList, e.clientY);
-            if (afterElement == null) {
-                layerList.appendChild(draggingItem);
-            } else {
-                layerList.insertBefore(draggingItem, afterElement);
-            }
+            if (afterElement == null) layerList.appendChild(draggingItem);
+            else layerList.insertBefore(draggingItem, afterElement);
         });
 
         layerList.appendChild(card); updateZIndex(); checkLayerLimit();
@@ -383,11 +354,8 @@
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
+            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+            else return closest;
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
@@ -397,7 +365,6 @@
         const cont = document.getElementById(`cont-${id}`); if(cont) cont.style[type === 'width' ? 'width' : type] = val + '%';
     }
 
-    // z-index: 리스트 상단 카드가 이미지의 가장 앞에 오도록 설정
     function updateZIndex() { 
         [...layerList.querySelectorAll('.layer-card')].forEach((card, index) => { 
             const cont = document.getElementById(`cont-${card.dataset.id}`); 
@@ -409,7 +376,7 @@
     function removeLayer(id) { document.getElementById(`cont-${id}`).remove(); document.querySelector(`.layer-card[data-id="${id}"]`).remove(); updateZIndex(); checkLayerLimit(); }
 
     function exportImage() {
-        if (!currentWorkName) { alert("저장된 스냅샷이 없습니다. 먼저 '스냅샷 저장'을 통해 파일명을 설정해주세요."); return; }
+        if (!currentWorkName) { alert("저장된 스냅샷이 없습니다. 먼저 '저장하기'를 통해 파일명을 설정해주세요."); return; }
         const area = document.getElementById('capture-area'), realW = parseInt(wIn.value), realH = parseInt(hIn.value);
         const captureScale = realW / area.offsetWidth;
         const oldGrid = previewBox.style.backgroundImage;
@@ -428,7 +395,8 @@
     }
 
     async function saveToHistory() {
-        const name = prompt("저장할 파일명을 입력해주세요 (규칙: 날짜_프로모션명_영역_오브젝트_이미지사이즈):\n예시 : 260403_이삭토스트_건틀렛빌더리스트_토스트_981x981", currentWorkName || "");
+        // 팝업 문구 및 가이드/예시 업데이트
+        const name = prompt("저장할 파일명을 입력해주세요\n(규칙: 날짜_프로모션명_노출영역_타입):\n예시 : 260403_이삭토스트_건틀렛빌더_리스트", currentWorkName || "");
         if (!name) return;
         currentWorkName = name.trim(); 
         document.getElementById('current-name-display').innerText = `현재 파일명: ${currentWorkName}`;
@@ -437,12 +405,18 @@
             return { id: id, name: card.dataset.name, visible: cont.style.visibility !== 'hidden', src: document.getElementById(`img-${id}`).src, width: cont.style.width, left: cont.style.left, top: cont.style.top }; 
         });
         const state = { customName: currentWorkName, canvasW: wIn.value, canvasH: hIn.value, padding: document.getElementById('pad-num').value, layers, timestamp: Date.now() };
-        const tx = db.transaction(storeName, "readwrite"); tx.objectStore(storeName).add(state); loadHistoryList(); alert("스냅샷이 저장되었습니다.");
+        const tx = db.transaction(storeName, "readwrite"); 
+        tx.objectStore(storeName).add(state).onsuccess = () => { loadHistoryList(); alert("스냅샷이 저장되었습니다."); };
     }
 
     async function loadHistoryList() {
         const db = await initDB(), tx = db.transaction(storeName, "readonly"), req = tx.objectStore(storeName).getAll(), select = document.getElementById('history-select');
-        req.onsuccess = () => { select.innerHTML = '<option value="">+ 신규 작업 시작</option>'; req.result.reverse().forEach(item => { const opt = document.createElement('option'); opt.value = item.id; opt.innerText = `📂 ${item.customName}`; select.appendChild(opt); }); };
+        req.onsuccess = () => { 
+            select.innerHTML = '<option value="">+ 신규 작업 시작</option>'; 
+            req.result.sort((a, b) => b.timestamp - a.timestamp).forEach(item => { 
+                const opt = document.createElement('option'); opt.value = item.id; opt.innerText = `📂 ${item.customName}`; select.appendChild(opt); 
+            }); 
+        };
     }
 
     async function restoreHistory(id) {
@@ -482,7 +456,14 @@
     async function deleteHistory() { const id = document.getElementById('history-select').value; if(id && confirm("삭제하시겠습니까?")) { const db = await initDB(); db.transaction(storeName, "readwrite").objectStore(storeName).delete(Number(id)).onsuccess = () => loadHistoryList(); } }
     async function deleteAllHistory() { if(confirm("모든 이력을 삭제하시겠습니까?")) { const db = await initDB(); db.transaction(storeName, "readwrite").objectStore(storeName).clear().onsuccess = () => location.reload(); } }
 
-    window.onload = async () => { loadHistoryList(); ratio = wIn.value / hIn.value; if(layerList.children.length === 0) addNewLayer(); syncBgColor(); updateCanvasView(); };
+    window.onload = async () => { 
+        await initDB(); 
+        await loadHistoryList(); 
+        ratio = wIn.value / hIn.value; 
+        if(layerList.children.length === 0) addNewLayer(); 
+        syncBgColor(); 
+        updateCanvasView(); 
+    };
 </script>
 </body>
 </html>
